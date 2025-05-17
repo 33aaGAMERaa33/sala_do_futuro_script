@@ -77,13 +77,18 @@ async function start(){
                 "pending",
             ],
         }));
-        
-        console.log("Solicitando atividade...");
+
+        if(getTarefasResponse.tarefas.length <= 0){
+            console.log("Nenhuma atividade para fazer");
+            return;
+        }
 
         console.log("Iniciando IA...");
         GetResponseQuestionsService.init(apiKey);
 
         for(const tarefa of getTarefasResponse.tarefas){
+            console.log("Solicitando atividade: " + tarefa.title + "...");
+
             const atividadeData = await GetAtividadeService.getAtividade(new GetAtividadeRequestDTO({
                 previewMode: false,
                 atividadeId: tarefa.id,
@@ -91,7 +96,8 @@ async function start(){
                 authToken: getAuthTokenResponse.authToken,
             }));
             
-            console.log("Pegando respostas da atividade: " + tarefa.title);
+            console.log("Pegando respostas da atividade");
+
             const respostas = await GetResponseQuestionsService.pedirResponstas(atividadeData.atividade.questions);
 
             let tempoMin = Math.ceil(atividadeData.atividade.minExecutionTime ?? tempoMinSeNaoTiver);
@@ -110,7 +116,7 @@ async function start(){
                 type: EnviarAtividadeType.submitted,
                 authToken: getAuthTokenResponse.authToken,
                 answerAccessedOn: tarefa.answerAccessedOn,
-                answerExecutedOn: tarefa.answerExecutedOn
+                answerExecutedOn: tarefa.answerExecutedOn,
             }));
         }
 
