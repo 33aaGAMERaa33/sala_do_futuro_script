@@ -33,12 +33,9 @@ async function start(){
     }
 
     try{
-        console.log("Iniciando IA...");
-        GetResponseQuestionsService.init(apiKey);
-
         console.log("Logando...");
         
-        const loginData = await LoginService.logar(new LoginRequestDTO({
+        const loginResponse = await LoginService.logar(new LoginRequestDTO({
             digito: digito,
             estado: estado,
             login: login,
@@ -47,8 +44,8 @@ async function start(){
         
         console.log("Solicitando chave da api do edusp...");
         
-        const authTokenData = await GetAuthTokenService.getAuthToken({
-            token: loginData.token,
+        const getAuthTokenResponse = await GetAuthTokenService.getAuthToken({
+            token: loginResponse.token,
         });
 
         console.log("Solicitando dados do usuario...");
@@ -56,23 +53,22 @@ async function start(){
         const userData = await UserService.request(new UserRequestDTO({
             listAll: true,
             withCards: true,
-            authToken: authTokenData.authToken,
+            authToken: getAuthTokenResponse.authToken,
         }));
 
         let publicationTargets: string[] = [];
 
         userData.rooms.forEach((value) => {
             publicationTargets.push(value.name);
-            publicationTargets.push(`${value.name}:${authTokenData.nick}`);
+            publicationTargets.push(`${value.name}:${getAuthTokenResponse.nick}`);
             value.groupCategories.forEach((value) => {
                 publicationTargets.push(value.id.toString());
             });
         });
 
-
         console.log("Solicitando tarefas...");
         
-        const tarefasData = await GetTarefasService.getTarefas(new GetTarefasRequestDTO(authTokenData.authToken, {
+        const getTarefasResponse = await GetTarefasService.getTarefas(new GetTarefasRequestDTO(getAuthTokenResponse.authToken, {
             expiredOnly: false,
             filterExpired: false,
             publicationTargets: publicationTargets,
@@ -83,14 +79,16 @@ async function start(){
         }));
         
         console.log("Solicitando atividade...");
-        
 
-        for(const tarefa of tarefasData.tarefas){
+        console.log("Iniciando IA...");
+        GetResponseQuestionsService.init(apiKey);
+
+        for(const tarefa of getTarefasResponse.tarefas){
             const atividadeData = await GetAtividadeService.getAtividade(new GetAtividadeRequestDTO({
                 previewMode: false,
                 atividadeId: tarefa.id,
                 type: AtividadeRequestType.apply,
-                authToken: authTokenData.authToken,
+                authToken: getAuthTokenResponse.authToken,
             }));
             
             console.log("Pegando respostas da atividade: " + tarefa.title);
@@ -108,9 +106,9 @@ async function start(){
                 duration: tempo,
                 aswers: respostas,
                 answerID: tarefa.answerID,
-                executedOn: authTokenData.nick,
+                executedOn: getAuthTokenResponse.nick,
                 type: EnviarAtividadeType.submitted,
-                authToken: authTokenData.authToken,
+                authToken: getAuthTokenResponse.authToken,
                 answerAccessedOn: tarefa.answerAccessedOn,
                 answerExecutedOn: tarefa.answerExecutedOn
             }));

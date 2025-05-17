@@ -1,4 +1,3 @@
-import { QuestionType } from "../enums/question_type.enum";
 import { GeminiIA } from "../models/gemini_ia/gemini_ia";
 import { Question } from "../models/question.model";
 
@@ -16,7 +15,7 @@ export class GetResponseQuestionsService {
             // Cada entrada representa a resposta a uma pergunta
             "{id_da_pergunta}": {
                 "question_type": "{tipo}",
-                "question_id": {id_da_pergunta, especificamente numero (sem aspas)},
+                "question_id": {id_da_pergunta},
                 "answer": {resposta conforme tipo}
             }
         }
@@ -81,14 +80,6 @@ export class GetResponseQuestionsService {
             3: false
         }
 
-        Importante:
-        Se algum id for numero, nao informe como string.
-        Exemplo:
-        -- NAO
-        question_id: "100"
-        -- SIM
-        question_id: 100
-
         Se encontrar um tipo não especificado, responda assim:
         "answer": {
             "status": "error",
@@ -107,23 +98,10 @@ export class GetResponseQuestionsService {
 
     public static async pedirResponstas(questions: Question[]) {
         if(!this.geminiIA) throw "IA nao inicializada";
-        let perguntas = [];
-
-
-        for(const question of questions){
-            let pergunta = {
-                id: question.id,
-                type: question.type,
-                options: question.options,
-                statement: question.statement,
-            };
-
-            perguntas.push(pergunta);
-        }
-
+    
         const response = await this.geminiIA.sendMessage([
             {text: GetResponseQuestionsService.prompt},
-            {text: JSON.stringify(perguntas)},
+            {text: JSON.stringify(questions)},
         ]);
 
         const respostasJson = JSON.parse(response[0].text.replace("```json", "").replace("```", ""));
