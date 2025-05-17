@@ -23,17 +23,30 @@ const user_request_dto_1 = require("./_dtos/request_dto/user.request_dto");
 const get_atividade_service_1 = require("./services/get_atividade.service");
 const get_atividade_request_dto_1 = require("./_dtos/request_dto/get_atividade.request_dto");
 const atividade_request_type_enum_1 = require("./enums/atividade_request_type.enum");
+const get_response_questions_service_1 = require("./services/get_response_questions.service");
+const enviar_atividade_request_dto_1 = require("./_dtos/request_dto/enviar_atividade.request_dto");
+const enviar_atividade_type_enum_1 = require("./enums/enviar_atividade_type.enum");
+const enviar_atividade_service_1 = require("./services/enviar_atividade.service");
 dotenv_1.default.config();
 const senha = process.env.SENHA;
 const login = process.env.LOGIN;
 const digito = process.env.DIGITO;
 const estado = process.env.ESTADO;
+const apiKey = process.env.GEMINI_API_KEY;
+// Caso a atividade tenha um tenho minimo, mas nao um maximo essa variavel vai entrar em ação
+// Ela vai ser adicionada ao tempo minimo para gerar um tempo maximo
+const tempoAddMinSeNaoTiverMax = 1;
+// Auto explicativo
+const tempoMinSeNaoTiver = 1;
 function start() {
     return __awaiter(this, void 0, void 0, function* () {
-        if (!login || !digito || !estado || !senha) {
+        var _a, _b;
+        if (!login || !digito || !estado || !senha || !apiKey) {
             throw "Dados faltando";
         }
         try {
+            console.log("Iniciando IA...");
+            get_response_questions_service_1.GetResponseQuestionsService.init(apiKey);
             console.log("Logando...");
             const loginData = yield login_service_1.LoginService.logar(new login_request_dto_1.LoginRequestDTO({
                 digito: digito,
@@ -70,15 +83,31 @@ function start() {
                 ],
             }));
             console.log("Solicitando atividade...");
-            const atividadeData = yield get_atividade_service_1.GetAtividadeService.getAtividade(new get_atividade_request_dto_1.GetAtividadeRequestDTO({
-                previewMode: false,
-                type: atividade_request_type_enum_1.AtividadeRequestType.apply,
-                authToken: authTokenData.authToken,
-                atividadeId: tarefasData.tarefas[0].id,
-            }));
-            atividadeData.tiposNaoRegistrados.map(() => {
-                throw "Não é possivel continuar, pois tem questões sem suporte";
-            });
+            for (const tarefa of tarefasData.tarefas) {
+                const atividadeData = yield get_atividade_service_1.GetAtividadeService.getAtividade(new get_atividade_request_dto_1.GetAtividadeRequestDTO({
+                    previewMode: false,
+                    atividadeId: tarefa.id,
+                    type: atividade_request_type_enum_1.AtividadeRequestType.apply,
+                    authToken: authTokenData.authToken,
+                }));
+                console.log("Pegando respostas da atividade: " + tarefa.title);
+                const respostas = yield get_response_questions_service_1.GetResponseQuestionsService.pedirResponstas(atividadeData.atividade.questions);
+                let tempoMin = Math.ceil((_a = atividadeData.atividade.minExecutionTime) !== null && _a !== void 0 ? _a : tempoMinSeNaoTiver);
+                let tempoMax = Math.floor((_b = atividadeData.atividade.maxExecutionTime) !== null && _b !== void 0 ? _b : tempoAddMinSeNaoTiverMax + tempoMin);
+                const tempo = Math.floor(Math.random() * (tempoMax - tempoMin + 1)) + tempoMin;
+                console.log("Enviando respostas...");
+                const response = yield enviar_atividade_service_1.EnviarAtividadeService.enviarAtividade(new enviar_atividade_request_dto_1.EnviarAtividadeRequestDTO({
+                    tarefaID: tarefa.id,
+                    duration: tempo,
+                    aswers: respostas,
+                    answerID: tarefa.answerID,
+                    executedOn: authTokenData.nick,
+                    type: enviar_atividade_type_enum_1.EnviarAtividadeType.submitted,
+                    authToken: authTokenData.authToken,
+                    answerAccessedOn: tarefa.answerAccessedOn,
+                    answerExecutedOn: tarefa.answerExecutedOn
+                }));
+            }
         }
         catch (e) {
             console.error("Algo deu errado: " + e.statusText);

@@ -8,7 +8,7 @@ export class Atividade {
     readonly description: string;
     readonly maxExecutionTime?: number;
     readonly minExecutionTime?: number;
-    readonly questions: Question<any>[];
+    readonly questions: Question[];
 
     constructor(data: AtividadeModelConstructor) {
         this.title = data.title;

@@ -10,7 +10,10 @@ export class GetTarefasResponseAdapter extends ResponseAdapter<GetTarefasRespons
             tarefas.push(new Tarefa({
                 id: tarefaSerialized.id,
                 title: tarefaSerialized.title,
+                answerID: tarefaSerialized.answer_id,
                 description: tarefaSerialized.description,
+                answerAccessedOn: tarefaSerialized.answer_accessed_on,
+                answerExecutedOn: tarefaSerialized.answer_executed_on,
             }));
         }
 

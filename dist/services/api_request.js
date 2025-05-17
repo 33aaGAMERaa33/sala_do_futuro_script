@@ -17,7 +17,7 @@ class ApiRequest {
         return __awaiter(this, void 0, void 0, function* () {
             let body;
             let url;
-            if (controller.httpMethod === http_method_enum_1.HttpMethod.post) {
+            if (controller.buildMethod() === http_method_enum_1.HttpMethod.post || controller.buildMethod() === http_method_enum_1.HttpMethod.put) {
                 url = controller.buildUrl();
                 body = JSON.stringify(controller.buildData());
             }
@@ -40,7 +40,7 @@ class ApiRequest {
             }
             const response = yield fetch(url, {
                 body: body,
-                method: controller.httpMethod,
+                method: controller.buildMethod(),
                 headers: controller.buildHeaders(),
             });
             if (response.status != 200) {

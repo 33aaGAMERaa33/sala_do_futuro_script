@@ -10,7 +10,7 @@ export class ApiRequest {
         let body: any;
         let url: string;
 
-        if(controller.httpMethod === HttpMethod.post) {
+        if(controller.buildMethod() === HttpMethod.post || controller.buildMethod() === HttpMethod.put) {
             url = controller.buildUrl();
             body = JSON.stringify(controller.buildData());
         }else {
@@ -35,7 +35,7 @@ export class ApiRequest {
 
         const response = await fetch(url, {
             body: body,
-            method: controller.httpMethod,
+            method: controller.buildMethod(),
             headers: controller.buildHeaders(),
         });
 

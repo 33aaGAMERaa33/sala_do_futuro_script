@@ -11,5 +11,8 @@ class Controller {
     buildUrl() {
         return this.url;
     }
+    buildMethod() {
+        return this.httpMethod;
+    }
 }
 exports.Controller = Controller;

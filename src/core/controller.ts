@@ -8,7 +8,7 @@ export abstract class Controller<A extends RequestDTO, B extends ResponseDTO, C 
     protected readonly url: string;
     public readonly requestDTO: A;
     public readonly responseAdapter: C;
-    public readonly httpMethod: HttpMethod;
+    protected readonly httpMethod: HttpMethod;
 
     protected constructor(data: ControllerContructor<A, B, C>) {
         this.url = data.url;
@@ -19,6 +19,10 @@ export abstract class Controller<A extends RequestDTO, B extends ResponseDTO, C 
 
     buildUrl() {
         return this.url;
+    }
+    
+    buildMethod(): HttpMethod {
+        return this.httpMethod;
     }
     abstract buildHeaders(): HeadersInit;
     abstract buildData(): Record<string, any>;

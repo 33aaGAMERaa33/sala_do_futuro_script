@@ -7,5 +7,5 @@ export interface AtividadeModelConstructor {
     description: string;
     maxExecutionTime?: number;
     minExecutionTime?: number;
-    questions: Question<any>[];
+    questions: Question[];
 }

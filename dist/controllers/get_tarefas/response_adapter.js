@@ -11,7 +11,10 @@ class GetTarefasResponseAdapter extends response_adapter_1.ResponseAdapter {
             tarefas.push(new tarefa_model_1.Tarefa({
                 id: tarefaSerialized.id,
                 title: tarefaSerialized.title,
+                answerID: tarefaSerialized.answer_id,
                 description: tarefaSerialized.description,
+                answerAccessedOn: tarefaSerialized.answer_accessed_on,
+                answerExecutedOn: tarefaSerialized.answer_executed_on,
             }));
         }
         return new get_tarefas_response_dto_1.GetTarefasResponseDTO(tarefas);
